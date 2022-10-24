@@ -1,4 +1,3 @@
-from pydoc import describe
 import torch
 from torch.utils.data import DataLoader, random_split
 import seaborn as sns
@@ -39,6 +38,7 @@ print(device)
 ##
 # DATASET
 dataset = get_digit_dataset(IMG_SIZE, NUM_CLASS)
+
 
 val_len = int(len(dataset)*0.05)
 train_dataset, val_dataset = random_split(dataset, [len(dataset) - val_len, val_len])

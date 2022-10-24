@@ -29,9 +29,13 @@ import matplotlib.pyplot as plt
 ## ----------------------------------------------------
 ## dataset
 class InMemoryMNIST(Dataset):
-    def __init__(self, path, mnist, img_size, num_classes):
+    def __init__(self, path, mnist, img_size, num_classes, add_T=None):
         super()
-        datasets = mnist(path, train=True, download=True, transform=T.Compose([T.ToTensor(), T.Resize((img_size, img_size), antialias=True), T.Lambda(lambda x: torch.flatten((x*(num_classes-1)).long()))]))
+        if add_T is not None:
+            transforms = T.Compose([T.ToTensor(), T.Resize((img_size, img_size), antialias=True), add_T])
+        else:
+            transforms = T.Compose([T.ToTensor(), T.Resize((img_size, img_size), antialias=True), T.Lambda(lambda x: torch.flatten((x*(num_classes-1)).long()))])
+        datasets = mnist(path, train=True, download=True, transform=transforms)
         self.data = [d[0] for d in datasets]
     
     def __len__(self):
@@ -43,11 +47,11 @@ class InMemoryMNIST(Dataset):
 
 
 
-def get_fashion_dataset(img_size, num_classes):
-    return InMemoryMNIST(DATASET_PATH, torchvision.datasets.FashionMNIST, img_size, num_classes)
+def get_fashion_dataset(img_size, num_classes, add_T=None):
+    return InMemoryMNIST(DATASET_PATH, torchvision.datasets.FashionMNIST, img_size, num_classes, add_T)
 
-def get_digit_dataset(img_size, num_classes):
-    return InMemoryMNIST(DATASET_PATH, torchvision.datasets.MNIST, img_size, num_classes)
+def get_digit_dataset(img_size, num_classes, add_T=None):
+    return InMemoryMNIST(DATASET_PATH, torchvision.datasets.MNIST, img_size, num_classes, add_T)
 
 ## ----------------------------------------------------
 ## plot image 
@@ -82,7 +86,7 @@ def train_gen_network(save_filepath, model, max_patience, train_loader, val_load
     for item in to_track:
         results[item] = []
 
-    prev_loss = 10000.0
+    prev_loss = torch.finfo(torch.float32).max
     p = 0
     loss_val = None
     
